@@ -1,0 +1,41 @@
+credit_default=readtable('defaultCard_cleaned.xls');
+%removing header
+credit_default_data=credit_default(2:size(credit_default,1),:);
+
+data=rand(30000,25);
+%train: 70%, test: 30%
+cv = cvpartition(size(data,1),'HoldOut',0.3);
+idx = cv.test;
+
+train_credit_default_data  = credit_default_data(~idx,:);
+test_credit_default_data  = credit_default_data(idx,:);
+
+%Data split into features and labels
+train_credit_default_labels=train_credit_default_data(:,25);
+train_credit_default_features=train_credit_default_data(:,1:24);
+
+test_credit_default_labels=test_credit_default_data(:,25);
+test_credit_default_features=test_credit_default_data(:,1:24);
+
+%using classification tree
+ctree=fitctree(train_credit_default_features,train_credit_default_labels)
+ctreeResult=predict(ctree,test_credit_default_features)
+
+view(ctree)
+view(ctree,'mode','graph')
+
+%confusion matrix for tree classifier
+confusionchart(table2cell(test_credit_default_labels),ctreeResult)
+
+%ROC Curve
+
+numTrials=1000;
+threshold=linspace(0,1,numTrials);
+TPR=zeros(numTrials,1);
+FPR=zeros(numTrials,1);
+for i=1:numTrials
+    predicted=cellfun(@(x) x>threshold, ctreeResult);
+    TPR(i)=sum(actual==1 & predicted==actual)./sum(actual==1);
+    FPR(i)=sum(actual==0 & predicted==actual)./sum(actual==0);
+end
+plot(ax,FPR, TPR,'-k')
