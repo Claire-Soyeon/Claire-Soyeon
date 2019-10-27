@@ -1,1 +1,1 @@
-Crdit card default project using machine learning methods
+Credit card default project using machine learning methods
